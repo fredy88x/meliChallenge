@@ -1,6 +1,7 @@
 package com.challenge.meli.services.impl;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,7 @@ public class DetectorService implements DetectorServiceI {
 				dnaDiagonal.append(dnaMatriz[i-j][j]);
 
 			}
-			foundSequences += MUTANT_REGEX_PATTERN.matcher(dnaDiagonal.toString()).results().count();
+			foundSequences += getMatchesSequences(dnaDiagonal.toString());
 			}
 		
 	}
@@ -105,7 +106,7 @@ public class DetectorService implements DetectorServiceI {
 				dnaDiagonal.append(dnaMatriz[dnaMatriz.length-j-1][j+i+1]);
 
 			}
-			foundSequences += MUTANT_REGEX_PATTERN.matcher(dnaDiagonal.toString()).results().count();
+			foundSequences += getMatchesSequences(dnaDiagonal.toString());
 
 			}
 	}
@@ -124,7 +125,7 @@ public class DetectorService implements DetectorServiceI {
 			for (int j = 0; j < dnaTranspuesta[i].length; j++) {
 				dnaColumn.append(dnaTranspuesta[i][j]);
 			}
-			foundSequences += MUTANT_REGEX_PATTERN.matcher(dnaColumn.toString()).results().count();
+			foundSequences += getMatchesSequences(dnaColumn.toString());
 		}
 
 	}
@@ -142,9 +143,18 @@ public class DetectorService implements DetectorServiceI {
 				throw new InvalidDnaException(
 						"Dna Matriz should be at least " + (MIN_SIZE_ROWS + 1) + " X " + (MIN_SIZE_ROWS + 1) + ".");
 			}
-			foundSequences += MUTANT_REGEX_PATTERN.matcher(string).results().count();
+			foundSequences += getMatchesSequences(string);
 		}
 
+	}
+	
+	private int getMatchesSequences(String dnaSequence) {
+		Matcher founds = MUTANT_REGEX_PATTERN.matcher(dnaSequence);
+		int count = 0;
+		while(founds.find()) {
+			count++;
+		}
+		return count;
 	}
 
 	/**
