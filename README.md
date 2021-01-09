@@ -17,9 +17,9 @@ Here is the [Mutant-Api](https://glacial-basin-45799.herokuapp.com/) running on 
 https://glacial-basin-45799.herokuapp.com/
 ```
 
-# Instrucciones de ejecucion Local
+## Local Deploy
 
-Se requiere una instancia de Redis:
+Redis instance required:
 
 ```bash
 sudo apt-get install redis-server
@@ -27,17 +27,23 @@ redis-server /usr/local/etc/redis.conf
 ```
 
 
-Para correr el servidor por defecto en el 8080:
+To run the default server on the 8080:
 
 ```bash
 mvn clean install
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+To run with docker
+
+```bash
+docker build -t mutant-challenge-api .
+docker run  -p 8080:8080 mutant-challenge-api
+```
 
 ## Demo
 
-Desde un entorno de pruebas para requests HTTP 
+From a test environment for HTTP requests
 
 ```
 POST /mutant HTTP/1.1
@@ -56,11 +62,11 @@ Cache-Control: no-cache
 ```
 
 
-## Diagrama de Secuencia
+## Diagram of Sequence
 
+![Secuencia](/docs/secuenciamutante.png)
 
-
-## Diagrama de Arquitectura del Sistema
+## System Architecture
 
 ![Secuencia](/docs/despliegue.png)
 
