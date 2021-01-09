@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.challenge.meli.entitys.Dna;
@@ -27,11 +28,16 @@ public class DetectorService implements DetectorServiceI {
 
 	private String[] dna;
 	private long foundSequences;
-	private static final int MIN_SIZE_ROWS = 3;
-	private static final long MIN_SIZE_SEQUENCE_MUTANT = 2;
-	private static final String NITROGEN_BASE_REGEX = "^([ATGC]*)$";
-	private static final String MUTANT_REGEX = "([ATGC])\\1{3}";
-	Pattern mutantRegexPatern = Pattern.compile(MUTANT_REGEX);
+	
+	@Value("${app.config.min.size.rows}")
+	private int minSizeRows;
+	@Value("${app.config.min.size.sequence.mutant}")
+	private int minSizeSequenceMutant;
+	@Value("${app.config.nitrogen.base.redex}")
+	private String nitrogenBaseRegex;
+	@Value("${app.config.mutant.redex}")
+	private String mutantRegex;
+	
 
 	@Override
 	public boolean isMutant(String[] dna) throws InvalidDnaException {
@@ -43,7 +49,7 @@ public class DetectorService implements DetectorServiceI {
 			return dnaFound.isMutant();
 		}
 		readDnaSequence(dna);
-		boolean resultado = foundSequences >= MIN_SIZE_SEQUENCE_MUTANT;
+		boolean resultado = foundSequences >= minSizeSequenceMutant;
 		saveDna(dnaSequence, resultado);
 		this.dna = null;
 		this.foundSequences = 0;
@@ -83,7 +89,7 @@ public class DetectorService implements DetectorServiceI {
 	 * @param dnaMatriz
 	 */
 	private void readUpDiagonal(char[][] dnaMatriz) {
-		if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+		if (foundSequences >= minSizeSequenceMutant) {
 			return;
 		}
 		int matrizSize = dnaMatriz.length;
@@ -93,7 +99,7 @@ public class DetectorService implements DetectorServiceI {
 				dnaDiagonal.append(dnaMatriz[i - j][j]);
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
-			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			if (foundSequences >= minSizeSequenceMutant) {
 				return;
 			}
 		}
@@ -109,7 +115,7 @@ public class DetectorService implements DetectorServiceI {
 				dnaDiagonal.append(dnaMatriz[i + j - (matrizSize - 1)][j]);
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
-			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			if (foundSequences >= minSizeSequenceMutant) {
 				return;
 			}
 		}
@@ -121,7 +127,7 @@ public class DetectorService implements DetectorServiceI {
 	 * @param dnaMatriz
 	 */
 	private void readDownDiagonal(char[][] dnaMatriz) {
-		if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+		if (foundSequences >= minSizeSequenceMutant) {
 			return;
 		}
 		int matrizSize = dnaMatriz.length;
@@ -133,7 +139,7 @@ public class DetectorService implements DetectorServiceI {
 
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
-			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			if (foundSequences >= minSizeSequenceMutant) {
 				return;
 			}
 		}
@@ -151,7 +157,7 @@ public class DetectorService implements DetectorServiceI {
 
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
-			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			if (foundSequences >= minSizeSequenceMutant) {
 				return;
 			}
 		}
@@ -163,11 +169,11 @@ public class DetectorService implements DetectorServiceI {
 	 * @param dnaMatriz
 	 */
 	private void readColumns(char[][] dnaMatriz) {
-		if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+		if (foundSequences >= minSizeSequenceMutant) {
 			return;
 		}
 		char[][] dnaTranspuesta = MatrizUtils.getMatrizTranspuesta(dnaMatriz, dna.length, dna.length);
-		for (int i = 0; i < dnaTranspuesta.length && foundSequences < MIN_SIZE_SEQUENCE_MUTANT; i++) {
+		for (int i = 0; i < dnaTranspuesta.length && foundSequences < minSizeSequenceMutant; i++) {
 			StringBuilder dnaColumn = new StringBuilder();
 			for (int j = 0; j < dnaTranspuesta[i].length; j++) {
 				dnaColumn.append(dnaTranspuesta[i][j]);
@@ -184,12 +190,12 @@ public class DetectorService implements DetectorServiceI {
 	 */
 	private void readRows() throws InvalidDnaException {
 		for (String string : dna) {
-			if (!string.matches(NITROGEN_BASE_REGEX)) {
+			if (!string.matches(nitrogenBaseRegex)) {
 				throw new InvalidDnaException("The String DNA contain invalid characters");
 			}
 			if (string.length() != dna.length) {
 				throw new InvalidDnaException(
-						"Dna Matriz should be at least " + (MIN_SIZE_ROWS + 1) + " X " + (MIN_SIZE_ROWS + 1) + ".");
+						"Dna Matriz should be at least " + (minSizeRows + 1) + " X " + (minSizeRows + 1) + ".");
 			}
 			foundSequences += getMatchesSequences(string);
 		}
@@ -197,6 +203,7 @@ public class DetectorService implements DetectorServiceI {
 	}
 
 	private int getMatchesSequences(String dnaSequence) {
+		Pattern mutantRegexPatern = Pattern.compile(mutantRegex);
 		Matcher founds = mutantRegexPatern.matcher(dnaSequence);
 		int count = 0;
 		while (founds.find()) {
@@ -211,9 +218,9 @@ public class DetectorService implements DetectorServiceI {
 	 * @throws InvalidDnaException
 	 */
 	private void validateMatrizDna() throws InvalidDnaException {
-		if (this.dna.length < MIN_SIZE_ROWS) {
+		if (this.dna.length < minSizeRows) {
 			throw new InvalidDnaException(
-					"Dna Matriz should be at least " + (MIN_SIZE_ROWS + 1) + " X " + (MIN_SIZE_ROWS + 1) + ".");
+					"Dna Matriz should be at least " + (minSizeRows + 1) + " X " + (minSizeRows + 1) + ".");
 		}
 	}
 }

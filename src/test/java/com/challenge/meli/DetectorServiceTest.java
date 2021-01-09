@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.challenge.meli.entitys.Dna;
 import com.challenge.meli.exceptions.InvalidDnaException;
@@ -35,6 +36,10 @@ class DetectorServiceTest {
 	@BeforeEach
 	public void setup() {
 	
+		ReflectionTestUtils.setField(detectorService, "minSizeRows", 3);
+		ReflectionTestUtils.setField(detectorService, "minSizeSequenceMutant", 2);
+		ReflectionTestUtils.setField(detectorService, "nitrogenBaseRegex", "^([ATGC]*)$");
+		ReflectionTestUtils.setField(detectorService, "mutantRegex", "([ATGC])\\1{3}");
 		dnaSequenceStored = new Dna();
 		dnaSequenceStored.setMutant(true);
 	}
