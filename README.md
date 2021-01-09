@@ -64,5 +64,5 @@ Cache-Control: no-cache
 
 ## Diagrama de Arquitectura del Sistema
 
-
+![Secuencia](/docs/despliegue.png)
 
