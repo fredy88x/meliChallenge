@@ -22,7 +22,7 @@ public class Dna implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	@Id 
-	private String dna;
+	private String dnaSequence;
 	private boolean mutant;
 
 }

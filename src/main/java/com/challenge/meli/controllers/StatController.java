@@ -30,7 +30,6 @@ public class StatController {
 		try {
 			return ResponseEntity.ok(statisticsServiceI.getStatisticsDna());
 		} catch (Exception e) {
-			System.out.println(e);
 			return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
 		}
 	}

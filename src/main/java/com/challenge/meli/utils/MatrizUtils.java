@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class MatrizUtils {
 	
+	private MatrizUtils() {}
+	
 	public static char[][] getMatrizTranspuesta(char[][] matrix, int sizeRows, int sizeColumns) {
 		char[][] dnaTranspuesta = new char[sizeRows][sizeColumns];
 		for (int i = 0; i < matrix.length; i++) {

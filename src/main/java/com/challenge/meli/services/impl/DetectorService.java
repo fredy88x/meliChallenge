@@ -15,6 +15,7 @@ import com.challenge.meli.utils.MatrizUtils;
 
 /**
  * It allows to detect mutants
+ * 
  * @author fredylaverde
  *
  */
@@ -23,14 +24,14 @@ public class DetectorService implements DetectorServiceI {
 
 	@Autowired
 	private DnaRepositoryI dnaRepositoryI;
-	
+
 	private String[] dna;
 	private long foundSequences;
-	private final int MIN_SIZE_ROWS = 3;
-	private final long MIN_SIZE_SEQUENCE_MUTANT = 2;
-	private final String NITROGEN_BASE_REGEX = "^([ATGC]*)$";
-	private final String MUTANT_REGEX = "([ATGC])\\1{3}";
-	Pattern MUTANT_REGEX_PATTERN = Pattern.compile(MUTANT_REGEX);
+	private static final int MIN_SIZE_ROWS = 3;
+	private static final long MIN_SIZE_SEQUENCE_MUTANT = 2;
+	private static final String NITROGEN_BASE_REGEX = "^([ATGC]*)$";
+	private static final String MUTANT_REGEX = "([ATGC])\\1{3}";
+	Pattern mutantRegexPatern = Pattern.compile(MUTANT_REGEX);
 
 	@Override
 	public boolean isMutant(String[] dna) throws InvalidDnaException {
@@ -38,12 +39,12 @@ public class DetectorService implements DetectorServiceI {
 		validateMatrizDna();
 		String dnaSequence = Arrays.toString(this.dna);
 		Dna dnaFound = dnaRepositoryI.findById(dnaSequence).orElse(null);
-		if( dnaFound != null) {
+		if (dnaFound != null) {
 			return dnaFound.isMutant();
-		};
+		}
 		readDnaSequence(dna);
-		boolean resultado =  foundSequences >= MIN_SIZE_SEQUENCE_MUTANT;
-		saveDna(dnaSequence,resultado);
+		boolean resultado = foundSequences >= MIN_SIZE_SEQUENCE_MUTANT;
+		saveDna(dnaSequence, resultado);
 		this.dna = null;
 		this.foundSequences = 0;
 		return resultado;
@@ -51,68 +52,114 @@ public class DetectorService implements DetectorServiceI {
 
 	/**
 	 * Read a dna sequence to search the mutant gen
+	 * 
 	 * @param dna
 	 * @throws InvalidDnaException
 	 */
 	private void readDnaSequence(String[] dna) throws InvalidDnaException {
-		char[][] dnaMatrix = MatrizUtils.getMatriz(dna);
 		readRows();
+		char[][] dnaMatrix = MatrizUtils.getMatriz(dna);
 		readColumns(dnaMatrix);
 		readUpDiagonal(dnaMatrix);
 		readDownDiagonal(dnaMatrix);
 	}
-	
-	
+
 	/**
 	 * Save a dna sequence in redis database
+	 * 
 	 * @param dnaSequence
 	 * @param isMutant
 	 */
 	private void saveDna(String dnaSequence, boolean isMutant) {
-		Dna dna = new Dna();
-		dna.setDna(dnaSequence);
-		dna.setMutant(isMutant);
-		dnaRepositoryI.save(dna);
+		Dna dnaData = new Dna();
+		dnaData.setDnaSequence(dnaSequence);
+		dnaData.setMutant(isMutant);
+		dnaRepositoryI.save(dnaData);
 	}
 
 	/**
 	 * Read Up diagonal the dna matriz
+	 * 
 	 * @param dnaMatriz
 	 */
 	private void readUpDiagonal(char[][] dnaMatriz) {
-		if(foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {return;}
-		for (int i=0;i<dnaMatriz.length;i++) {
-			StringBuffer dnaDiagonal = new StringBuffer();
-			for (int j=0;j<=i;j++) {
-
-				dnaDiagonal.append(dnaMatriz[i-j][j]);
-
+		if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			return;
+		}
+		int matrizSize = dnaMatriz.length;
+		for (int i = 0; i < matrizSize; i++) {
+			StringBuilder dnaDiagonal = new StringBuilder();
+			for (int j = 0; j <= i; j++) {
+				dnaDiagonal.append(dnaMatriz[i - j][j]);
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
+			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+				return;
 			}
+		}
+		readUpRightDiagonal(dnaMatriz);
 		
+	}
+	
+	private void readUpRightDiagonal(char[][] dnaMatriz) {
+		int matrizSize = dnaMatriz.length;
+		for (int i = 0; i < matrizSize; i++) {
+			StringBuilder dnaDiagonal = new StringBuilder();
+			for (int j = matrizSize - 1; j >= matrizSize - 1 - i; j--) {
+				dnaDiagonal.append(dnaMatriz[i + j - (matrizSize - 1)][j]);
+			}
+			foundSequences += getMatchesSequences(dnaDiagonal.toString());
+			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+				return;
+			}
+		}
 	}
 
 	/**
 	 * Read Down diagonal the dna matriz
+	 * 
 	 * @param dnaMatriz
 	 */
 	private void readDownDiagonal(char[][] dnaMatriz) {
-		if(foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {return;}
-		for (int i=0;i<dnaMatriz.length;i++) {
-			StringBuffer dnaDiagonal = new StringBuffer();
-			for (int j=0;j<dnaMatriz.length-i-1;j++) {
+		if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+			return;
+		}
+		int matrizSize = dnaMatriz.length;
+		for (int i = 0; i < matrizSize; i++) {
+			StringBuilder dnaDiagonal = new StringBuilder();
+			for (int j = 0; j < matrizSize - i - 1; j++) {
 
-				dnaDiagonal.append(dnaMatriz[dnaMatriz.length-j-1][j+i+1]);
+				dnaDiagonal.append(dnaMatriz[matrizSize - j - 1][j + i + 1]);
 
 			}
 			foundSequences += getMatchesSequences(dnaDiagonal.toString());
+			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+				return;
+			}
+		}
+		readDownLeftDiagonal(dnaMatriz);
+		
+	}
+	
+	private void readDownLeftDiagonal(char[][] dnaMatriz) {
+		int matrizSize = dnaMatriz.length;
+		for (int i = 0; i < matrizSize; i++) {
+			StringBuilder dnaDiagonal = new StringBuilder();
+			for (int j = 0; j <= matrizSize - i - 1; j++) {
+
+				dnaDiagonal.append(dnaMatriz[matrizSize - j - 1][matrizSize - j - i - 1]);
 
 			}
+			foundSequences += getMatchesSequences(dnaDiagonal.toString());
+			if (foundSequences >= MIN_SIZE_SEQUENCE_MUTANT) {
+				return;
+			}
+		}
 	}
 
 	/**
 	 * Read columns the dna matriz
+	 * 
 	 * @param dnaMatriz
 	 */
 	private void readColumns(char[][] dnaMatriz) {
@@ -121,7 +168,7 @@ public class DetectorService implements DetectorServiceI {
 		}
 		char[][] dnaTranspuesta = MatrizUtils.getMatrizTranspuesta(dnaMatriz, dna.length, dna.length);
 		for (int i = 0; i < dnaTranspuesta.length && foundSequences < MIN_SIZE_SEQUENCE_MUTANT; i++) {
-			StringBuffer dnaColumn = new StringBuffer();
+			StringBuilder dnaColumn = new StringBuilder();
 			for (int j = 0; j < dnaTranspuesta[i].length; j++) {
 				dnaColumn.append(dnaTranspuesta[i][j]);
 			}
@@ -132,6 +179,7 @@ public class DetectorService implements DetectorServiceI {
 
 	/**
 	 * Read rows the DNA Matriz
+	 * 
 	 * @throws InvalidDnaException
 	 */
 	private void readRows() throws InvalidDnaException {
@@ -147,11 +195,11 @@ public class DetectorService implements DetectorServiceI {
 		}
 
 	}
-	
+
 	private int getMatchesSequences(String dnaSequence) {
-		Matcher founds = MUTANT_REGEX_PATTERN.matcher(dnaSequence);
+		Matcher founds = mutantRegexPatern.matcher(dnaSequence);
 		int count = 0;
-		while(founds.find()) {
+		while (founds.find()) {
 			count++;
 		}
 		return count;
@@ -159,6 +207,7 @@ public class DetectorService implements DetectorServiceI {
 
 	/**
 	 * Validate the DNA matriz
+	 * 
 	 * @throws InvalidDnaException
 	 */
 	private void validateMatrizDna() throws InvalidDnaException {
