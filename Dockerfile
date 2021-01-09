@@ -8,4 +8,4 @@ ARG JAR_FILE=target/*.jar
 # Copy the JAR
 COPY ${JAR_FILE} app.jar
 # Set ENTRYPOINT in exec form to run the container as an executable
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-jar","-Dspring.profiles.active=dev","/app.jar"]
