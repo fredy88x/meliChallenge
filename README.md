@@ -13,34 +13,27 @@ This application is currently running on Heroku cloud.
 
 Here is the [Mutant-Api](https://glacial-basin-45799.herokuapp.com/) running on Heroku.
 
-# Instrucciones de ejecucion
+```
+https://glacial-basin-45799.herokuapp.com/
+```
+
+# Instrucciones de ejecucion Local
 
 Se requiere una instancia de Redis:
 
 ```bash
 sudo apt-get install redis-server
-redis-server
+redis-server /usr/local/etc/redis.conf
 ```
 
-Instalar los requerimientos:
+
+Para correr el servidor por defecto en el 8080:
 
 ```bash
-pip3 install -r requirements.txt
+mvn clean install
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Para correr el servidor por defecto en el 8081:
-
-```bash
-python3 server_api.py
-```
-para otro puerto:
-
-```bash
-export REDIS=[redis_server]
-export REDISPWD=[redis_password]
-export PORT=[puerto]
-python3 server_api.py
-```
 
 ## Demo
 
@@ -48,7 +41,7 @@ Desde un entorno de pruebas para requests HTTP
 
 ```
 POST /mutant HTTP/1.1
-Host: https://possessed-spirit-56339.herokuapp.com
+Host: https://glacial-basin-45799.herokuapp.com
 Content-Type: text/plain; charset=utf-8
 Cache-Control: no-cache
 
@@ -57,14 +50,11 @@ Cache-Control: no-cache
 
 ```
 GET /stats HTTP/1.1
-Host: https://possessed-spirit-56339.herokuapp.com
+Host: https://glacial-basin-45799.herokuapp.com
 Content-Type: text/plain; charset=utf-8
 Cache-Control: no-cache
 ```
 
-## Testing
-
->python3 test.py
 
 ## Diagrama de Secuencia
 
