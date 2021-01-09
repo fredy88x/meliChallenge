@@ -1,4 +1,12 @@
-# meliChallenge
+# Mercado libre Mutant-Challenge
+Technical Test 'MercadoLibre' - Mutant API REST to identify if a human is a mutant given the DNA and store and make available the statistics of verifications the exposed method (humans, mutants and ratio).
+
+Where you will receive as a parameter an array of Strings that represent each row of a table of (NxN) with the DNA sequence. The letters of the Strings can only be: (A, T, C, G), which represents each nitrogenous base of DNA.
+
+![Secuencia](/docs/explaindna.png)
+
+You will know if a human is a mutant, if you find more than one four-letter sequence equal, obliquely, horizontally or vertically.
+
 ## TL/DR
 
 ```
